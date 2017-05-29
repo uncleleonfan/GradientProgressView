@@ -5,25 +5,35 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.SweepGradient;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
-import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
 
 public class GradientProgressView extends View {
     private static final String TAG = "GradientProgressView";
 
     private static final int DEFAULT_ANIMATION_DURATION = 3000;
+    private static final int[] DEFAULT_COLORS = {Color.BLUE, Color.GREEN};
+
+    private static int[] mGradientColors = DEFAULT_COLORS;
 
     private int mProgress = 0;
     private int mDrawProgress = 0;
     private int mDuration = DEFAULT_ANIMATION_DURATION;
-    private Paint mPaint = new Paint();
-    private RectF mRectF = new RectF();
 
+    private Paint mGradientCirclePaint = new Paint();
+    private Paint mBackgroundCirclePaint = new Paint();
+    private Paint mTextPaint = new Paint();
+
+    private RectF mRectF = new RectF();
+    private Rect mTextBound = new Rect();
+    private int mCx;
+    private int mCy;
 
     public GradientProgressView(Context context) {
         this(context, null);
@@ -31,16 +41,21 @@ public class GradientProgressView extends View {
 
     public GradientProgressView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+        initTextPaint();
+    }
 
+    private void initTextPaint() {
+        mTextPaint.setAntiAlias(true);
+        float textSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 22, getResources().getDisplayMetrics());
+        mTextPaint.setTextSize(textSize);
     }
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         initRect(w, h);
-
-        int cx = w / 2;
-        int cy = h / 2;
-        initPaint(cx, cy);
+        mCx = w / 2;
+        mCy = h / 2;
+        initCirclePaint();
     }
 
     private void initRect(int w, int h) {
@@ -51,23 +66,33 @@ public class GradientProgressView extends View {
         mRectF.set(left, top, right, bottom);
     }
 
-    private void initPaint(int cx, int cy) {
-        int[] colors = {Color.BLUE, Color.GREEN, Color.YELLOW};
-        Shader shader = new SweepGradient(cx, cy, colors, null);
+    private void initCirclePaint() {
+        Shader shader = new SweepGradient(mCx, mCy, mGradientColors, null);
+        mGradientCirclePaint.setShader(shader);
+        mGradientCirclePaint.setStyle(Paint.Style.STROKE);
+        mGradientCirclePaint.setStrokeWidth(30);
+        mGradientCirclePaint.setAntiAlias(true);
+        mGradientCirclePaint.setStrokeCap(Paint.Cap.ROUND);
 
-        mPaint.setShader(shader);
-        mPaint.setStyle(Paint.Style.STROKE);
-        mPaint.setStrokeWidth(30);
-        mPaint.setAntiAlias(true);
-        mPaint.setStrokeCap(Paint.Cap.ROUND);
+        mBackgroundCirclePaint.setStyle(Paint.Style.STROKE);
+        mBackgroundCirclePaint.setStrokeWidth(30);
+        mBackgroundCirclePaint.setAntiAlias(true);
+        mBackgroundCirclePaint.setColor(Color.LTGRAY);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
-        Log.d(TAG, "onDraw: " + mDrawProgress);
+        canvas.drawArc(mRectF, 0, 360, false, mBackgroundCirclePaint);
+
         float startAngle = - 90;
         float sweepAngle = mDrawProgress * 1.0f / 100 * 360;
-        canvas.drawArc(mRectF, startAngle, sweepAngle, false, mPaint);
+        String progressString = String.valueOf(mDrawProgress);
+        mTextPaint.getTextBounds(progressString, 0, progressString.length(), mTextBound);
+        float x = mCx - mTextBound.width() / 2;
+        float y = mCy + mTextBound.height() / 2;
+        canvas.drawText(progressString, x, y, mTextPaint);
+
+        canvas.drawArc(mRectF, startAngle, sweepAngle, false, mGradientCirclePaint);
     }
 
     public void setProgress(int progress) {
@@ -87,5 +112,19 @@ public class GradientProgressView extends View {
         valueAnimator.start();
     }
 
+    public static int[] getGradientColors() {
+        return mGradientColors;
+    }
 
+    public static void setGradientColors(int[] mGradientColors) {
+        GradientProgressView.mGradientColors = mGradientColors;
+    }
+
+    public int getDuration() {
+        return mDuration;
+    }
+
+    public void setDuration(int duration) {
+        mDuration = duration;
+    }
 }
