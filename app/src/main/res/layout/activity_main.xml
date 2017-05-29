@@ -8,6 +8,7 @@
     tools:context="com.leon.gradientprogressview.MainActivity">
 
     <com.leon.gradientprogressview.GradientProgressView
+        android:id="@+id/progress"
         android:layout_width="300dp"
         android:layout_height="300dp"
         android:layout_gravity="center"
