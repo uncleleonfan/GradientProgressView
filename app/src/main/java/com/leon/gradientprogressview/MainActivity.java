@@ -15,10 +15,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mProgress = (GradientProgressView) findViewById(R.id.progress);
-        mProgress.setProgress(100);
+//        mProgress.setProgress(100);
     }
 
     public void onStartAnimation(View view) {
-        mProgress.startAnimation();
+//        mProgress.startAnimation();
+        mProgress.startAnimation(100);
     }
 }

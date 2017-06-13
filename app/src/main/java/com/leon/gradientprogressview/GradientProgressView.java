@@ -1,6 +1,6 @@
 package com.leon.gradientprogressview;
 
-import android.animation.ValueAnimator;
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -85,17 +85,21 @@ public class GradientProgressView extends View {
         canvas.drawArc(mRectF, 0, 360, false, mBackgroundCirclePaint);
 
         float startAngle = - 90;
-        float sweepAngle = mDrawProgress * 1.0f / 100 * 360;
-        String progressString = String.valueOf(mDrawProgress);
+        //ValueAnimator实现
+//        float sweepAngle = mDrawProgress * 1.0f / 100 * 360;
+//        String progressString = String.valueOf(mDrawProgress);
+        //ObjectAnimator实现
+        float sweepAngle = mProgress * 1.0f / 100 * 360;
+        String progressString = String.valueOf(mProgress);
         mTextPaint.getTextBounds(progressString, 0, progressString.length(), mTextBound);
         float x = mCx - mTextBound.width() / 2;
         float y = mCy + mTextBound.height() / 2;
         canvas.drawText(progressString, x, y, mTextPaint);
-
+        //绘制进度
         canvas.drawArc(mRectF, startAngle, sweepAngle, false, mGradientCirclePaint);
     }
 
-    public void setProgress(int progress) {
+/*    public void setProgress(int progress) {
         mProgress = progress;
     }
 
@@ -110,7 +114,23 @@ public class GradientProgressView extends View {
             }
         });
         valueAnimator.start();
+    }*/
+
+    /**
+     * 供属性动画使用
+     */
+    public void setProgress(int progress) {
+        mProgress = progress;
+        invalidate();
     }
+
+    public void startAnimation(int degree) {
+        ObjectAnimator objectAnimator = ObjectAnimator.ofInt(this, "progress", 0, degree);
+        objectAnimator.setDuration(mDuration);
+        objectAnimator.start();
+    }
+
+
 
     public static int[] getGradientColors() {
         return mGradientColors;
